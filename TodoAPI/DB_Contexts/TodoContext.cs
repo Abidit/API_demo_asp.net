@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TodoApi.Models;
 
-namespace TodoApi.Models;
+namespace TodoAPI.DB_Contexts;
 
 public class TodoContext : DbContext
 {
@@ -11,4 +12,3 @@ public class TodoContext : DbContext
 
     public DbSet<TodoItem> TodoItems { get; set; } = null!;
 }
-    

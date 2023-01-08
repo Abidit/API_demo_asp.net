@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
 using System.Net;
 using System.Text.RegularExpressions;
+using TodoAPI.DB_Contexts;
 using TodoAPI.Models;
 
 namespace TodoAPI.Controllers
@@ -33,7 +34,7 @@ namespace TodoAPI.Controllers
 
         //GET: api/Users/2
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(long id)
+        public async Task<ActionResult<User>> GetUser(int id)
         {
             if (_context.Users == null)
             {
@@ -57,19 +58,26 @@ namespace TodoAPI.Controllers
                 return Problem("The data base does not contain user table.");
             }
 
-            if (String.IsNullOrEmpty(user.FullName) || String.IsNullOrEmpty(user.Email) || String.IsNullOrEmpty(user.Password))
-            {
-                throw new HttpRequestException("Please enter all the fields");
-            }
+            //if (String.IsNullOrEmpty(user.FullName) || String.IsNullOrEmpty(user.Email) || String.IsNullOrEmpty(user.Password))
+            //{
+            //    return this.StatusCode(StatusCodes.Status400BadRequest, new { error = "Please enter all fields" });
+            //}
 
-            if (Regex.IsMatch(user.Email, @"^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$"))
-            {
-                return Problem("Please enter an valid email");
-            }
+            //if (!Regex.IsMatch(user.Email, @"^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$"))
+            //{
+            //    return this.StatusCode(StatusCodes.Status400BadRequest, new { error = "Please enter an valid email" });
+            //}
                 
             if(user.Password.Length < 8)
             {
-                return Problem("The password must be 8 character long.");
+                return this.StatusCode(StatusCodes.Status400BadRequest, new { error = "The password must be 8 character long." });
+            }
+
+            User existingUser = await _context.Users.SingleOrDefaultAsync(x => x.Email == user.Email);
+
+            if (existingUser != null)
+            {
+                return this.StatusCode(StatusCodes.Status400BadRequest, new { error = "Email address already in use." });
             }
 
             _context.Users.Add(user);
